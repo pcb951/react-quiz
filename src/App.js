@@ -3,10 +3,13 @@ import Header from "./Header";
 import Main from "./Main";
 import Loader from "./Loader";
 import Error from "./Error";
+import StartScreen from "./StartScreen";
+import Question from "./Question";
 
 const initialState = {
   questions: [],
-  status: "",
+  status: "Loading",
+  index: 0,
 };
 
 function reducer(state, action) {
@@ -17,13 +20,20 @@ function reducer(state, action) {
       return { ...state, status: "Loaded", questions: action.payload };
     case "FETCH_ERROR":
       return { ...state, status: "Error" };
+    case "START_QUIZ":
+      return { ...state, status: "start" };
     default:
       throw new Error("Invalid action type");
   }
 }
 
 function App() {
-  const [{ questions, status }, dispatch] = useReducer(reducer, initialState);
+  const [{ questions, status, index }, dispatch] = useReducer(
+    reducer,
+    initialState
+  );
+
+  const numberOfQuestions = questions.length;
 
   useEffect(function () {
     fetch("http://localhost:5000/questions")
@@ -37,7 +47,13 @@ function App() {
       <Main>
         {status === "Loading" && <Loader />}
         {status === "Error" && <Error />}
-        {status === "Loaded" && console.log(questions)}
+        {status === "Loaded" && (
+          <StartScreen
+            numberOfQuestions={numberOfQuestions}
+            dispatch={dispatch}
+          />
+        )}
+        {status === "start" && <Question question={questions[index]} />}
       </Main>
     </div>
   );
