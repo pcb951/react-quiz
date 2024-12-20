@@ -1,7 +1,5 @@
-import "./index.css";
-
 function App() {
-  return <div className="App">React Quiz</div>;
+  return <h2>react quiz</h2>;
 }
 
 export default App;
