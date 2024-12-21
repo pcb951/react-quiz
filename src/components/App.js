@@ -5,11 +5,14 @@ import Loader from "./Loader";
 import Error from "./Error";
 import StartScreen from "./StartScreen";
 import Question from "./Question";
+import Button from "./Button";
 
 const initialState = {
   questions: [],
   status: "Loading",
   index: 0,
+  answer: null,
+  points: 0,
 };
 
 function reducer(state, action) {
@@ -22,13 +25,25 @@ function reducer(state, action) {
       return { ...state, status: "Error" };
     case "START_QUIZ":
       return { ...state, status: "start" };
+    case "NEW_ANSWER":
+      const question = state.questions.at(state.index);
+      return {
+        ...state,
+        answer: action.payload,
+        points:
+          action.payload === question.correctOption
+            ? state.points + question.points
+            : state.points,
+      };
+    case "NEXT_QUESTION":
+      return { ...state, index: state.index + 1, answer: null };
     default:
       throw new Error("Invalid action type");
   }
 }
 
 function App() {
-  const [{ questions, status, index }, dispatch] = useReducer(
+  const [{ questions, status, index, answer, points }, dispatch] = useReducer(
     reducer,
     initialState
   );
@@ -53,7 +68,19 @@ function App() {
             dispatch={dispatch}
           />
         )}
-        {status === "start" && <Question question={questions[index]} />}
+        {status === "start" && (
+          <>
+            <Question
+              question={questions[index]}
+              answer={answer}
+              dispatch={dispatch}
+            />
+
+            <Button dispatch={dispatch} answer={answer}>
+              Next
+            </Button>
+          </>
+        )}
       </Main>
     </div>
   );
