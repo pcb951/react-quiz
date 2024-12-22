@@ -7,6 +7,7 @@ import StartScreen from "./StartScreen";
 import Question from "./Question";
 import Button from "./Button";
 import FinishedScreen from "./FinishedScreen";
+import Progress from "./Progress";
 
 const initialState = {
   questions: [],
@@ -46,6 +47,13 @@ function reducer(state, action) {
         highScore:
           state.points > state.highScore ? state.points : state.highScore,
       };
+    case "RESTART_QUIZ":
+      return {
+        ...initialState,
+        status: "Loaded",
+        questions: state.questions,
+        highScore: state.highScore,
+      };
     default:
       throw new Error("Invalid action type");
   }
@@ -82,6 +90,12 @@ function App() {
         )}
         {status === "start" && (
           <>
+            <Progress
+              numberOfQuestions={numberOfQuestions}
+              index={index}
+              totalPoints={totalPoints}
+              points={points}
+            />
             <Question
               question={questions[index]}
               answer={answer}
@@ -105,6 +119,7 @@ function App() {
             points={points}
             totalPoints={totalPoints}
             highScore={highScore}
+            dispatch={dispatch}
           />
         )}
       </Main>
