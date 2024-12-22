@@ -8,6 +8,10 @@ import Question from "./Question";
 import Button from "./Button";
 import FinishedScreen from "./FinishedScreen";
 import Progress from "./Progress";
+import Footer from "./Footer";
+import Timer from "./Timer";
+
+const TIME_PER_QUESTION = 30;
 
 const initialState = {
   questions: [],
@@ -16,6 +20,7 @@ const initialState = {
   answer: null,
   points: 0,
   highScore: 0,
+  timeRemaining: null,
 };
 
 function reducer(state, action) {
@@ -23,11 +28,19 @@ function reducer(state, action) {
     case "FETCH_DATA":
       return { ...state, status: "Loading" };
     case "FETCH_SUCCESS":
-      return { ...state, status: "Loaded", questions: action.payload };
+      return {
+        ...state,
+        status: "Loaded",
+        questions: action.payload,
+      };
     case "FETCH_ERROR":
       return { ...state, status: "Error" };
     case "START_QUIZ":
-      return { ...state, status: "start" };
+      return {
+        ...state,
+        status: "start",
+        timeRemaining: state.questions.length * TIME_PER_QUESTION,
+      };
     case "NEW_ANSWER":
       const question = state.questions.at(state.index);
       return {
@@ -54,14 +67,22 @@ function reducer(state, action) {
         questions: state.questions,
         highScore: state.highScore,
       };
+    case "TICK":
+      return {
+        ...state,
+        timeRemaining: state.timeRemaining - 1,
+        status: state.timeRemaining === 0 ? "finish" : state.status,
+      };
     default:
       throw new Error("Invalid action type");
   }
 }
 
 function App() {
-  const [{ questions, status, index, answer, points, highScore }, dispatch] =
-    useReducer(reducer, initialState);
+  const [
+    { questions, status, index, answer, points, highScore, timeRemaining },
+    dispatch,
+  ] = useReducer(reducer, initialState);
 
   const numberOfQuestions = questions.length;
 
@@ -95,6 +116,7 @@ function App() {
               index={index}
               totalPoints={totalPoints}
               points={points}
+              answer={answer}
             />
             <Question
               question={questions[index]}
@@ -102,15 +124,19 @@ function App() {
               dispatch={dispatch}
             />
 
-            {index < numberOfQuestions - 1 && (
-              <Button dispatch={dispatch} answer={answer}>
-                Next
-              </Button>
-            )}
+            <Footer>
+              <Timer timeRemaining={timeRemaining} dispatch={dispatch} />
 
-            {index === numberOfQuestions - 1 && (
-              <Button dispatch={dispatch}>Finish</Button>
-            )}
+              {index < numberOfQuestions - 1 && (
+                <Button dispatch={dispatch} answer={answer}>
+                  Next
+                </Button>
+              )}
+
+              {index === numberOfQuestions - 1 && (
+                <Button dispatch={dispatch}>Finish</Button>
+              )}
+            </Footer>
           </>
         )}
 
