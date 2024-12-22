@@ -6,6 +6,7 @@ import Error from "./Error";
 import StartScreen from "./StartScreen";
 import Question from "./Question";
 import Button from "./Button";
+import FinishedScreen from "./FinishedScreen";
 
 const initialState = {
   questions: [],
@@ -13,6 +14,7 @@ const initialState = {
   index: 0,
   answer: null,
   points: 0,
+  highScore: 0,
 };
 
 function reducer(state, action) {
@@ -37,18 +39,28 @@ function reducer(state, action) {
       };
     case "NEXT_QUESTION":
       return { ...state, index: state.index + 1, answer: null };
+    case "FINISH_QUIZ":
+      return {
+        ...state,
+        status: "finish",
+        highScore:
+          state.points > state.highScore ? state.points : state.highScore,
+      };
     default:
       throw new Error("Invalid action type");
   }
 }
 
 function App() {
-  const [{ questions, status, index, answer, points }, dispatch] = useReducer(
-    reducer,
-    initialState
-  );
+  const [{ questions, status, index, answer, points, highScore }, dispatch] =
+    useReducer(reducer, initialState);
 
   const numberOfQuestions = questions.length;
+
+  const totalPoints = questions.reduce(
+    (acc, question) => acc + question.points,
+    0
+  );
 
   useEffect(function () {
     fetch("http://localhost:5000/questions")
@@ -76,10 +88,24 @@ function App() {
               dispatch={dispatch}
             />
 
-            <Button dispatch={dispatch} answer={answer}>
-              Next
-            </Button>
+            {index < numberOfQuestions - 1 && (
+              <Button dispatch={dispatch} answer={answer}>
+                Next
+              </Button>
+            )}
+
+            {index === numberOfQuestions - 1 && (
+              <Button dispatch={dispatch}>Finish</Button>
+            )}
           </>
+        )}
+
+        {status === "finish" && (
+          <FinishedScreen
+            points={points}
+            totalPoints={totalPoints}
+            highScore={highScore}
+          />
         )}
       </Main>
     </div>

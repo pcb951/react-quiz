@@ -4,7 +4,11 @@ function Button({ children, dispatch, answer }) {
   return (
     <button
       className="btn btn-ui"
-      onClick={() => dispatch({ type: "NEXT_QUESTION" })}
+      onClick={() =>
+        children === "Finish"
+          ? dispatch({ type: "FINISH_QUIZ" })
+          : dispatch({ type: "NEXT_QUESTION" })
+      }
     >
       {children}
     </button>
